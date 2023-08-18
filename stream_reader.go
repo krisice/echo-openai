@@ -9,7 +9,7 @@ import (
 )
 
 type streamable interface {
-	ChatCompletionStreamResponse | CompletionResponse
+	ChatCompletionStreamResponse
 }
 
 type streamReader[T streamable] struct {
