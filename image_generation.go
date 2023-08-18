@@ -50,3 +50,18 @@ func (c *Client) CreateImageGenerationWithContext(ctx context.Context, request I
 	c.generateImageWithContext(ctx, urlSuffix, request, &response)
 	return
 }
+func (c *Client) generateImageWithContext(ctx context.Context, urlSuffix string, request, response any) (err error) {
+	if !checkRequest(request) {
+		err = ErrUnexpectedImageRequestType
+		return
+	}
+
+	req, err := c.requestBuilder.BuildWithContext(ctx, http.MethodPost, c.getFullURL(urlSuffix), request)
+	if err != nil {
+		return
+	}
+
+	c.setCommonHeader(req)
+	c.sendRequestWithContext(ctx, req, response)
+	return
+}
