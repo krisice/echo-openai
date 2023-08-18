@@ -1,9 +1,13 @@
 package echoopenai
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestListModels(t *testing.T) {
-	client := NewClient("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")
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
 	models, err := client.ListModels()
 	if err != nil {
 		t.Error("test ListModels func failed")
@@ -12,7 +16,8 @@ func TestListModels(t *testing.T) {
 }
 
 func TestRetrieveModel(t *testing.T) {
-	client := NewClient("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")
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
 	model, err := client.RetrieveModel(GPT3Dot5Turbo0301)
 	if err != nil {
 		t.Error("test RetrieveModel func failed")

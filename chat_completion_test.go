@@ -1,9 +1,13 @@
 package echoopenai
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestChatCompletions(t *testing.T) {
-	client := NewClient("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")
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
 	message := ChatCompletionMessage{
 		Role:    ChatCompletionRoleUser,
 		Content: "Test",

@@ -7,7 +7,8 @@ import (
 )
 
 func TestCreateImageGeneration(t *testing.T) {
-	client := NewClient("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")
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
 	req := ImageGenerationRequest{
 		Prompt:         "black cat",
 		ResponseFormat: ImageFormatURL,

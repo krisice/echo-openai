@@ -1,9 +1,13 @@
 package echoopenai
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestCreateEmbedding(t *testing.T) {
-	client := NewClient("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")
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
 	req := EmbeddingRequest{
 		Model: TextEmbeddingAda002,
 		Input: []string{"Test", "Test2"},
