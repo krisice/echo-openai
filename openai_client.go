@@ -3,11 +3,19 @@ package echoopenai
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
 
 const OpenAIRequestAPIv1 = "https://api.openai.com/v1"
+const defaultEmptyMessagesLimit uint = 300
+
+type TokenUsage struct {
+	PromptTokens     int32 `json:"prompt_tokens"`
+	CompletionTokens int32 `json:"completion_tokens"`
+	TotalTokens      int32 `json:"total_tokens"`
+}
 
 type Client struct {
 	apiKey         string
@@ -37,6 +45,11 @@ func (c *Client) setStreamHeader(req *http.Request) {
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Connection", "keep-alive")
 }
+
+// func (c *Client) setFormDataHeader(req *http.Request) {
+// 	req.Header.Set("Content-Type", "multipart/form-data")
+// }
+
 func (c *Client) getFullURL(suffix string) string {
 	return fmt.Sprintf("%v/%v", c.baseURL, suffix)
 }
@@ -57,9 +70,18 @@ func (c *Client) sendRequestWithContext(ctx context.Context, req *http.Request, 
 
 	return decodeResponse(res.Body, v)
 }
+
+func (c *Client) createStreamRequestWithContext(ctx context.Context, method string, urlSuffix string, body any) (*http.Request, error) {
+	req, err := c.requestBuilder.BuildWithContext(ctx, method, c.getFullURL(urlSuffix), body)
 	if err != nil {
 		return nil, err
 	}
+
+	c.setStreamHeader(req)
+	c.setCommonHeader(req)
+	return req, nil
+}
+
 func (c *Client) handleErrorResp(resp *http.Response) error {
 	var errRes ErrorResponse
 	err := json.NewDecoder(resp.Body).Decode(&errRes)
@@ -101,4 +123,13 @@ func decodeString(body io.Reader, output *string) error {
 	*output = string(b)
 	return nil
 }
+
+func isString(v any) bool {
+	_, ok := v.(string)
+	return ok
+}
+
+func isSlice(v any) bool {
+	_, ok := v.([]string)
+	return ok
 }
