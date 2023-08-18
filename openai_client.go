@@ -1,37 +1,104 @@
 package echoopenai
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 )
 
+const OpenAIRequestAPIv1 = "https://api.openai.com/v1"
+
 type Client struct {
-	apiKey   string
-	Organize string
+	apiKey         string
+	baseURL        string
+	client         *http.Client
+	requestBuilder RequestBuilder
 }
 
 func NewClient(apiKey string) *Client {
 	return &Client{
-		apiKey: apiKey,
+		apiKey:         apiKey,
+		baseURL:        OpenAIRequestAPIv1,
+		client:         &http.Client{},
+		requestBuilder: NewHTTPRequestBuilder(),
 	}
 }
 
-func (c *Client) ListModels() (*ListModelsResponse, error) {
-	res, err := http.Get("https://api.openai.com/v1/models")
+func (c *Client) setCommonHeader(req *http.Request) {
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+}
+
+func (c *Client) setStreamHeader(req *http.Request) {
+	req.Header.Set("Accept", "text/event-stream")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "keep-alive")
+}
+func (c *Client) getFullURL(suffix string) string {
+	return fmt.Sprintf("%v/%v", c.baseURL, suffix)
+}
+
+func (c *Client) sendRequestWithContext(ctx context.Context, req *http.Request, v any) error {
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if isFailureStatusCode(res) {
+		var data []byte = make([]byte, 65536)
+		res.Body.Read(data)
+		fmt.Printf("res: %v", string(data))
+		c.handleErrorResp(res)
+	}
+
+	return decodeResponse(res.Body, v)
+}
 	if err != nil {
 		return nil, err
 	}
-	res.Header.Set("Content-Type", "application/json")
-	res.Header.Set("Authorization", "Bearer "+ c.apiKey)
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+func (c *Client) handleErrorResp(resp *http.Response) error {
+	var errRes ErrorResponse
+	err := json.NewDecoder(resp.Body).Decode(&errRes)
+	if err != nil || errRes.Error == nil {
+		reqErr := &RequestError{
+			HTTPStatusCode: resp.StatusCode,
+			Err:            err,
+		}
+		if errRes.Error != nil {
+			reqErr.Err = errRes.Error
+		}
+		return reqErr
 	}
-	var models ListModelsResponse
-	err = json.Unmarshal(body, &models)
-	if err != nil {
-		return nil, err
+
+	errRes.Error.HTTPStatusCode = resp.StatusCode
+	return errRes.Error
+}
+
+func decodeResponse(body io.Reader, v any) error {
+	if v == nil {
+		return nil
 	}
-	return &models, nil
+
+	if result, ok := v.(*string); ok {
+		return decodeString(body, result)
+	}
+	return json.NewDecoder(body).Decode(v)
+}
+
+func isFailureStatusCode(resp *http.Response) bool {
+	return resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusBadRequest
+}
+
+func decodeString(body io.Reader, output *string) error {
+	b, err := io.ReadAll(body)
+	if err != nil {
+		return err
+	}
+	*output = string(b)
+	return nil
+}
 }
