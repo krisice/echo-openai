@@ -3,12 +3,7 @@ package echoopenai
 import (
 	"bytes"
 	"context"
-	"errors"
-	"fmt"
-	"mime/multipart"
 	"net/http"
-	"net/textproto"
-	"strconv"
 )
 
 type RequestBuilder interface {
@@ -81,85 +76,62 @@ func generateFormData(request any) (reqBytes []byte, contentType string, err err
 }
 
 func generateImageEditRequestFormData(request ImageEditRequest) (reqBytes []byte, contentType string, err error) {
-	var bytesBuf bytes.Buffer
-	multiPartWriter := multipart.NewWriter(&bytesBuf)
-	defer multiPartWriter.Close()
-
-	createFormDataErr := generateFileFormData(multiPartWriter, "image", request.Image, "image.png")
-	if createFormDataErr != nil {
-		err = createFormDataErr
-		return
-	}
-
-	if request.Mask != "" {
-		createFormDataErr = generateFileFormData(multiPartWriter, "mask", request.Mask, "mask.png")
-	}
-	if createFormDataErr != nil {
-		err = createFormDataErr
-		return
-	}
-
-	err = generateCommonRequestFormData(multiPartWriter, request.Config)
-	reqBytes = bytesBuf.Bytes()
-	contentType = multiPartWriter.FormDataContentType()
-	fmt.Println(contentType)
-	fmt.Println(string(reqBytes))
 	return
 }
 
 func generateImageVariationRequestFormData(request ImageVariationRequest) (reqBytes []byte, err error) {
-	var bytesBuf bytes.Buffer
-	multiPartWriter := multipart.NewWriter(&bytesBuf)
-	defer multiPartWriter.Close()
+	// var bytesBuf bytes.Buffer
+	// multiPartWriter := multipart.NewWriter(&bytesBuf)
+	// defer multiPartWriter.Close()
 
-	createFormDataErr := generateFileFormData(multiPartWriter, "image", request.Image, "image.png")
-	if createFormDataErr != nil {
-		err = createFormDataErr
-		return
-	}
+	// createFormDataErr := generateFileFormData(multiPartWriter, "image", request.Image, "image.png")
+	// if createFormDataErr != nil {
+	// 	err = createFormDataErr
+	// 	return
+	// }
 
-	err = generateCommonRequestFormData(multiPartWriter, request.Config)
-	reqBytes = bytesBuf.Bytes()
+	// err = generateCommonRequestFormData(multiPartWriter, request.Config)
+	// reqBytes = bytesBuf.Bytes()
 	return
 }
 
-func generateFileFormData(multiPartWriter *multipart.Writer, key string, value string, name string) error {
-	// fileReader := strings.NewReader("test")
+// func generateFileFormData(multiPartWriter *multipart.Writer, key string, value string, name string) error {
+// 	// fileReader := strings.NewReader("test")
 
-	mimeHeader := make(textproto.MIMEHeader)
-	mimeHeader.Add("Content-Type", "image/png")
-	mimeHeader.Add("Content-Disposition", fmt.Sprintf("form-data; name=\"%v\"; filename=%v", key, name))
-	part, createPartErr := multiPartWriter.CreatePart(mimeHeader)
+// 	mimeHeader := make(textproto.MIMEHeader)
+// 	mimeHeader.Add("Content-Type", "image/png")
+// 	mimeHeader.Add("Content-Disposition", fmt.Sprintf("form-data; name=\"%v\"; filename=%v", key, name))
+// 	part, createPartErr := multiPartWriter.CreatePart(mimeHeader)
 
-	if createPartErr != nil {
-		return createPartErr
-	}
-	_, writeErr := part.Write([]byte("this is an image content"))
-	if writeErr != nil {
-		return writeErr
-	}
+// 	if createPartErr != nil {
+// 		return createPartErr
+// 	}
+// 	_, writeErr := part.Write([]byte("this is an image content"))
+// 	if writeErr != nil {
+// 		return writeErr
+// 	}
 
-	// fileWriter, createFormErr := multiPartWriter.CreateFormFile(key, name)
-	// if createFormErr != nil {
-	// 	return createFormErr
-	// }
+// 	// fileWriter, createFormErr := multiPartWriter.CreateFormFile(key, name)
+// 	// if createFormErr != nil {
+// 	// 	return createFormErr
+// 	// }
 
-	// _, copyErr := io.Copy(fileWriter, fileReader)
-	// if copyErr != nil {
-	// 	return copyErr
-	// }
+// 	// _, copyErr := io.Copy(fileWriter, fileReader)
+// 	// if copyErr != nil {
+// 	// 	return copyErr
+// 	// }
 
-	return nil
-}
+// 	return nil
+// }
 
-func generateCommonRequestFormData(multiPartWriter *multipart.Writer, request ImageRequestCommonConfig) error {
-	writeFieldNErr := multiPartWriter.WriteField("n", strconv.FormatInt(int64(request.N), 10))
-	writeFieldSizeErr := multiPartWriter.WriteField("size", string(request.Size))
-	writeFieldResFormatErr := multiPartWriter.WriteField("response_format", string(request.ResponseFormat))
-	_ = multiPartWriter.WriteField("image", "image")
-	// writeFieldUserErr := multiPartWriter.WriteField("user", request.User)
-	if writeFieldNErr != nil || writeFieldSizeErr != nil || writeFieldResFormatErr != nil {
-		return errors.New("error: multi part writer write field failed")
-	}
-	return nil
-}
+// func generateCommonRequestFormData(multiPartWriter *multipart.Writer, request ImageRequestCommonConfig) error {
+// 	writeFieldNErr := multiPartWriter.WriteField("n", strconv.FormatInt(int64(request.N), 10))
+// 	writeFieldSizeErr := multiPartWriter.WriteField("size", string(request.Size))
+// 	writeFieldResFormatErr := multiPartWriter.WriteField("response_format", string(request.ResponseFormat))
+// 	_ = multiPartWriter.WriteField("image", "image")
+// 	// writeFieldUserErr := multiPartWriter.WriteField("user", request.User)
+// 	if writeFieldNErr != nil || writeFieldSizeErr != nil || writeFieldResFormatErr != nil {
+// 		return errors.New("error: multi part writer write field failed")
+// 	}
+// 	return nil
+// }

@@ -18,10 +18,11 @@ type TokenUsage struct {
 }
 
 type Client struct {
-	apiKey         string
-	baseURL        string
-	client         *http.Client
-	requestBuilder RequestBuilder
+	apiKey            string
+	baseURL           string
+	client            *http.Client
+	requestBuilder    RequestBuilder
+	createFormBuilder func(io.Writer) FormBuilder
 }
 
 func NewClient(apiKey string) *Client {
@@ -30,6 +31,9 @@ func NewClient(apiKey string) *Client {
 		baseURL:        OpenAIRequestAPIv1,
 		client:         &http.Client{},
 		requestBuilder: NewHTTPRequestBuilder(),
+		createFormBuilder: func(body io.Writer) FormBuilder {
+			return NewFormBuilder(body)
+		},
 	}
 }
 
@@ -129,4 +133,13 @@ func isString(v any) bool {
 func isSlice(v any) bool {
 	_, ok := v.([]string)
 	return ok
+}
+
+func checkRequest(request any) bool {
+	switch request.(type) {
+	case ImageGenerationRequest, ImageEditRequest, ImageVariationRequest:
+		return true
+	default:
+		return false
+	}
 }
