@@ -26,22 +26,12 @@ func (b *HTTPRequestBuilder) BuildWithContext(ctx context.Context, method, url s
 		return http.NewRequestWithContext(ctx, method, url, nil)
 	}
 
-	var reqBytes []byte
-	var err error
-
-	var contentType string
-	switch request.(type) {
-	case ImageEditRequest, ImageVariationRequest:
-		reqBytes, contentType, err = generateFormData(request)
-	default:
-		reqBytes, err = b.marshaller.Marshal(request)
-	}
-
+	reqBytes, err := b.marshaller.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(
+	return http.NewRequestWithContext(
 		ctx,
 		method,
 		url,
