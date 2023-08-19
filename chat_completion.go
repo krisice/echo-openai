@@ -59,6 +59,6 @@ func (c *Client) CreateChatCompletionWithContext(ctx context.Context, request Ch
 	}
 
 	c.setCommonHeader(req)
-	c.sendRequestWithContext(ctx, req, &response)
+	err = c.sendRequestWithContext(ctx, req, &response)
 	return
 }

@@ -37,6 +37,6 @@ func (c *Client) CreateModerationWithContext(ctx context.Context, request Modera
 	}
 
 	c.setCommonHeader(req)
-	c.sendRequestWithContext(ctx, req, &response)
+	err = c.sendRequestWithContext(ctx, req, &response)
 	return
 }

@@ -108,7 +108,7 @@ func (c *Client) ListModelsWithContext(ctx context.Context) (response ListModels
 	}
 
 	c.setCommonHeader(req)
-	c.sendRequestWithContext(ctx, req, &response)
+	err = c.sendRequestWithContext(ctx, req, &response)
 	return
 }
 
@@ -124,6 +124,6 @@ func (c *Client) RetrieveModelWithContext(ctx context.Context, id OpenAIModel) (
 	}
 
 	c.setCommonHeader(req)
-	c.sendRequestWithContext(ctx, req, &response)
+	err = c.sendRequestWithContext(ctx, req, &response)
 	return
 }

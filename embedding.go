@@ -45,6 +45,6 @@ func (c *Client) CreateEmbeddingsWithContext(ctx context.Context, request Embedd
 	}
 
 	c.setCommonHeader(req)
-	c.sendRequestWithContext(ctx, req, &response)
+	err = c.sendRequestWithContext(ctx, req, &response)
 	return
 }
