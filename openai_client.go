@@ -62,10 +62,7 @@ func (c *Client) sendRequestWithContext(ctx context.Context, req *http.Request, 
 	defer res.Body.Close()
 
 	if isFailureStatusCode(res) {
-		var data []byte = make([]byte, 65536)
-		res.Body.Read(data)
-		fmt.Printf("res: %v", string(data))
-		c.handleErrorResp(res)
+		return c.handleErrorResp(res)
 	}
 
 	return decodeResponse(res.Body, v)
