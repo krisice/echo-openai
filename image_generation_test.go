@@ -69,3 +69,55 @@ func TestCreateB64JSONFormatImageGeneration(t *testing.T) {
 
 	t.Logf("test generate base64 json format image successed")
 }
+
+func TestImageEdit(t *testing.T) {
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
+
+	file, err := os.Open("images/image_generation.png")
+	if err != nil {
+		t.Errorf("read images/image_generation.png file failed %v", err)
+	}
+
+	req := ImageEditRequest{
+		Image:  file,
+		Prompt: "White dog",
+		Config: ImageRequestCommonConfig{
+			ResponseFormat: ImageFormatURL,
+			N:              1,
+			Size:           ImageSize1024x1024,
+		},
+	}
+	res, err := client.CreateImageEdit(req)
+	if err != nil {
+		t.Errorf("test edit url format image failed %v", err)
+		return
+	}
+	t.Logf("test edit url format image successed %v", res)
+}
+
+func TestImageVariation(t *testing.T) {
+	apiKey := os.Getenv("ECHOOPENAIAPIKEY")
+	client := NewClient(apiKey)
+
+	file, err := os.Open("images/image_generation.png")
+	if err != nil {
+		t.Errorf("read images/image_generation.png file failed %v", err)
+	}
+
+	req := ImageVariationRequest{
+		Image: file,
+		Config: ImageRequestCommonConfig{
+			ResponseFormat: ImageFormatURL,
+			N:              1,
+			Size:           ImageSize1024x1024,
+		},
+	}
+
+	res, err := client.CreateImageVariation(req)
+	if err != nil {
+		t.Errorf("test variation url format image failed %v", err)
+		return
+	}
+	t.Logf("test variation url format image successed %v", res)
+}
